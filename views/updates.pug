@@ -2,7 +2,36 @@ doctype html
 html
   head
     title= title
+    style.
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+
   body
     h1= title
 
-    a(href="/") Return to the homepage
+    a(href="/update-cobj") Add to this table
+
+    if contacts.length
+      table
+        thead
+          tr
+            th First Name
+            th Last Name
+            th Email
+        tbody
+          each contact in contacts
+            tr
+              td= contact.properties.firstname || ''
+              td= contact.properties.lastname || ''
+              td= contact.properties.email || ''
+    else
+      p No contacts found.

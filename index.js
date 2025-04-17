@@ -16,8 +16,30 @@ const PRIVATE_APP_ACCESS = '';
 
 // TODO: ROUTE 1 - Create a new app.get route for the homepage to call your custom object data. Pass this data along to the front-end and create a new pug template in the views folder.
 
-app.get("/", (req, res) => {
-    res.send("Welcome to the HubSpot Contact Updater");
+app.get("/", async (req, res) => {
+    try {
+      const response = await axios.get(
+        "https://api.hubapi.com/crm/v3/objects/contacts",
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}`,
+          },
+          params: {
+            properties: "firstname,lastname,email", // Add any custom properties here
+          },
+        }
+      );
+  
+      const contacts = response.data.results;
+  
+      res.render("homepage", {
+        title: "HubSpot Contacts Table",
+        contacts, // pass the data to pug
+      });
+    } catch (error) {
+      console.error("Error fetching contacts:", error.response?.data || error.message);
+      res.status(500).send("Error loading homepage");
+    }
   });
 
 // TODO: ROUTE 2 - Create a new app.get route for the form to create or update new custom object data. Send this data along in the next route.
@@ -32,7 +54,8 @@ app.post("/update-cobj", async (req, res) => {
     const { firstname, lastname, email } = req.body;
   
     try {
-      const response = await axios.post(
+      // Make POST request to HubSpot CRM
+      await axios.post(
         "https://api.hubapi.com/crm/v3/objects/contacts",
         {
           properties: {
@@ -49,9 +72,10 @@ app.post("/update-cobj", async (req, res) => {
         }
       );
   
-      res.send("Contact created successfully!");
+      // Redirect back to homepage after success
+      res.redirect("/");
     } catch (error) {
-      console.error(error.response?.data || error.message);
+      console.error("Error creating contact:", error.response?.data || error.message);
       res.status(500).send("Error creating contact");
     }
   });
